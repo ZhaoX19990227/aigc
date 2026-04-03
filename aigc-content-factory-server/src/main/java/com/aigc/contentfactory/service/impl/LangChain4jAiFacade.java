@@ -7,6 +7,7 @@ import com.aigc.contentfactory.service.model.ScriptDraft;
 import com.aigc.contentfactory.service.model.ScriptDraftPayload;
 import com.aigc.contentfactory.service.model.TopicSuggestion;
 import com.aigc.contentfactory.service.model.TopicSuggestionPayload;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
@@ -51,11 +52,11 @@ public class LangChain4jAiFacade implements AiFacade {
                             .map(item -> item.getTitle() + " | 热度=" + item.getScore() + " | 摘要=" + item.getSummary())
                             .collect(Collectors.joining("\n"))
             );
-            TopicSuggestionPayload payload = objectMapper.readValue(extractJson(response), TopicSuggestionPayload.class);
-            if (payload.getSelectedTopics() == null || payload.getSelectedTopics().isEmpty()) {
+            List<TopicSuggestion> parsedTopics = parseTopicSuggestions(extractJson(response));
+            if (parsedTopics.isEmpty()) {
                 return fallback.suggestTopics(hotspots, accountPositioning, platforms);
             }
-            return payload.getSelectedTopics();
+            return parsedTopics;
         } catch (Exception exception) {
             log.warn("OpenAI suggestTopics failed, fallback to mock: {}", exception.getMessage());
             return fallback.suggestTopics(hotspots, accountPositioning, platforms);
@@ -89,6 +90,58 @@ public class LangChain4jAiFacade implements AiFacade {
 
     private String normalize(String positioning) {
         return positioning == null || positioning.isBlank() ? "AI 自动化内容运营" : positioning;
+    }
+
+    private List<TopicSuggestion> parseTopicSuggestions(String json) throws Exception {
+        JsonNode root = objectMapper.readTree(json);
+        JsonNode selectedTopicsNode = root.path("selectedTopics");
+        if (!selectedTopicsNode.isArray()) {
+            return List.of();
+        }
+
+        List<TopicSuggestion> topics = new java.util.ArrayList<>();
+        for (JsonNode item : selectedTopicsNode) {
+            try {
+                String title = item.path("title").asText("").trim();
+                if (title.isBlank()) {
+                    continue;
+                }
+                String reason = item.path("reason").asText("模型未返回原因");
+                String targetAudience = item.path("targetAudience").asText("泛内容消费用户");
+                List<String> suggestedPlatforms = toStringList(item.path("suggestedPlatforms"));
+                List<String> riskFlags = toStringList(item.path("riskFlags"));
+                int priority = item.path("priority").isInt() ? item.path("priority").asInt() : topics.size() + 1;
+                topics.add(TopicSuggestion.builder()
+                        .title(title)
+                        .reason(reason)
+                        .targetAudience(targetAudience)
+                        .suggestedPlatforms(suggestedPlatforms)
+                        .riskFlags(riskFlags)
+                        .priority(priority)
+                        .build());
+            } catch (Exception itemException) {
+                log.warn("Skip invalid topic suggestion item: {}", itemException.getMessage());
+            }
+        }
+        return topics;
+    }
+
+    private List<String> toStringList(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return List.of();
+        }
+        if (node.isArray()) {
+            List<String> values = new java.util.ArrayList<>();
+            for (JsonNode item : node) {
+                String text = item.asText("").trim();
+                if (!text.isBlank()) {
+                    values.add(text);
+                }
+            }
+            return values;
+        }
+        String text = node.asText("").trim();
+        return text.isBlank() ? List.of() : List.of(text);
     }
 
     private String extractJson(String raw) {
