@@ -36,7 +36,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .taskCount(taskCount)
                 .reviewPendingCount(reviewPendingCount)
                 .publishedCount(publishedCount)
-                .supportedPlatforms(List.of("XIAOHONGSHU", "DOUYIN", "BILIBILI", "LOCAL_SIMULATION"))
+                .supportedPlatforms(List.of("XIAOHONGSHU", "DOUYIN", "BILIBILI"))
                 .build();
     }
 }

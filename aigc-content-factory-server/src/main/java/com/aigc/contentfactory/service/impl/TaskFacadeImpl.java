@@ -114,9 +114,26 @@ public class TaskFacadeImpl implements TaskFacade {
         contentTaskMapper.insert(task);
 
         List<TopicSuggestion> suggestions = aiFacade.suggestTopics(hotspots, request.getAccountPositioning(), request.getTargetPlatforms());
-        TopicSuggestion selected = request.getPreferredTopic() != null && !request.getPreferredTopic().isBlank()
-                ? suggestions.stream().filter(item -> item.getTitle().contains(request.getPreferredTopic())).findFirst().orElse(suggestions.getFirst())
-                : suggestions.getFirst();
+        TopicSuggestion selected;
+        if (request.getSelectedHotspotIds() != null && request.getSelectedHotspotIds().size() == 1) {
+            HotspotRecord onlyHotspot = hotspots.getFirst();
+            selected = TopicSuggestion.builder()
+                    .title(onlyHotspot.getTitle())
+                    .reason("用户显式选择了该热点，按所选热点直接创建任务")
+                    .targetAudience("基于账号定位自动生成")
+                    .suggestedPlatforms(request.getTargetPlatforms())
+                    .riskFlags(List.of())
+                    .priority(1)
+                    .build();
+            suggestions = List.of(selected);
+        } else if (request.getPreferredTopic() != null && !request.getPreferredTopic().isBlank()) {
+            selected = suggestions.stream()
+                    .filter(item -> item.getTitle().contains(request.getPreferredTopic()))
+                    .findFirst()
+                    .orElse(suggestions.getFirst());
+        } else {
+            selected = suggestions.getFirst();
+        }
 
         task.setSelectedTopic(selected.getTitle());
         task.setStatus(TaskStatus.TOPIC_SELECTED.name());
@@ -208,7 +225,10 @@ public class TaskFacadeImpl implements TaskFacade {
                 : platforms;
         List<PublishRecord> records = new ArrayList<>();
         for (String platform : finalPlatforms) {
-            PlatformPublisher publisher = platformPublishers.getOrDefault(platform, platformPublishers.get("LOCAL_SIMULATION"));
+            PlatformPublisher publisher = platformPublishers.get(platform);
+            if (publisher == null) {
+                throw new IllegalArgumentException("不支持的平台: " + platform);
+            }
             PublishRecord record = publisher.publish(task, script);
             publishRecordMapper.insert(record);
             records.add(record);

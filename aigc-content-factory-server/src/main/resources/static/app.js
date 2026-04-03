@@ -1,5 +1,6 @@
 const state = {
   selectedTaskId: null,
+  selectedTaskName: '',
   selectedHotspotIds: new Set(),
 };
 
@@ -71,8 +72,16 @@ function renderTasks(tasks) {
   `).join('');
 }
 
+function renderCurrentTask() {
+  const target = document.getElementById('currentTaskName');
+  target.textContent = state.selectedTaskId
+    ? `当前任务：${state.selectedTaskName || `#${state.selectedTaskId}`}`
+    : '当前未选中任务';
+}
+
 function renderTaskDetail(detail) {
   state.selectedTaskId = detail.id;
+  state.selectedTaskName = detail.name;
   const assetHtml = (detail.assets || []).map((asset) => `
     <article class="asset-card">
       <div class="badge">${asset.assetType}</div>
@@ -106,9 +115,9 @@ function renderTaskDetail(detail) {
           <p>平台：${(detail.targetPlatforms || []).join(', ')}</p>
           <p>备注：${detail.errorMessage || '暂无'}</p>
           <div>
-            <button class="action primary inline" onclick="approveTask()">审核通过</button>
-            <button class="action secondary inline" onclick="rejectTask()">审核驳回</button>
-            <button class="action secondary inline" onclick="publishTask()">触发发布</button>
+            <button class="action primary inline" onclick="approveTask()" ${!state.selectedTaskId ? 'disabled' : ''}>审核通过</button>
+            <button class="action secondary inline" onclick="rejectTask()" ${!state.selectedTaskId ? 'disabled' : ''}>审核驳回</button>
+            <button class="action secondary inline" onclick="publishTask()" ${!state.selectedTaskId ? 'disabled' : ''}>触发发布</button>
           </div>
         </section>
         <section class="detail-card">
@@ -135,6 +144,7 @@ function renderTaskDetail(detail) {
       </div>
     </div>
   `;
+  renderCurrentTask();
 }
 
 async function loadSummary() {
@@ -161,6 +171,26 @@ async function loadTaskDetail(taskId) {
   renderTaskDetail(detail);
 }
 
+function renderEmptyTaskDetail() {
+  state.selectedTaskId = null;
+  state.selectedTaskName = '';
+  document.getElementById('taskDetail').innerHTML = `
+    <div class="detail-layout">
+      <div class="detail-grid">
+        <section class="detail-card">
+          <div>
+            <button class="action primary inline" disabled>审核通过</button>
+            <button class="action secondary inline" disabled>审核驳回</button>
+            <button class="action secondary inline" disabled>触发发布</button>
+          </div>
+          <p class="empty-state">请先在任务列表中点击“查看详情”，选中一个任务。</p>
+        </section>
+      </div>
+    </div>
+  `;
+  renderCurrentTask();
+}
+
 async function refreshAll() {
   await Promise.all([loadSummary(), loadHotspots(), loadTasks()]);
 }
@@ -175,11 +205,15 @@ async function createTask(event) {
   event.preventDefault();
   const form = event.target;
   const platforms = [...form.querySelector('#targetPlatforms').selectedOptions].map((option) => option.value);
+  if (!platforms.length) {
+    toast('请至少选择一个目标平台');
+    return;
+  }
   const payload = {
     taskName: form.taskName.value,
     accountPositioning: form.accountPositioning.value,
     preferredTopic: form.preferredTopic.value,
-    targetPlatforms: platforms.length ? platforms : ['LOCAL_SIMULATION'],
+    targetPlatforms: platforms,
     selectedHotspotIds: [...state.selectedHotspotIds],
   };
   const detail = await request('/api/tasks', {
@@ -201,8 +235,11 @@ function toggleHotspot(id, checked) {
   }
 }
 
-async function approveTask() {
-  if (!state.selectedTaskId) return;
+async function handleApproveTask() {
+  if (!state.selectedTaskId) {
+    toast('请先在任务列表中点击“查看详情”，选中一个任务');
+    return;
+  }
   const detail = await request(`/api/tasks/${state.selectedTaskId}/approve`, {
     method: 'POST',
     body: JSON.stringify({ comment: '前端审核通过' }),
@@ -212,8 +249,11 @@ async function approveTask() {
   await refreshAll();
 }
 
-async function rejectTask() {
-  if (!state.selectedTaskId) return;
+async function handleRejectTask() {
+  if (!state.selectedTaskId) {
+    toast('请先在任务列表中点击“查看详情”，选中一个任务');
+    return;
+  }
   const detail = await request(`/api/tasks/${state.selectedTaskId}/reject`, {
     method: 'POST',
     body: JSON.stringify({ comment: '前端审核驳回，请调整选题或脚本' }),
@@ -223,8 +263,11 @@ async function rejectTask() {
   await refreshAll();
 }
 
-async function publishTask() {
-  if (!state.selectedTaskId) return;
+async function handlePublishTask() {
+  if (!state.selectedTaskId) {
+    toast('请先在任务列表中点击“查看详情”，选中一个任务');
+    return;
+  }
   const detail = await request(`/api/tasks/${state.selectedTaskId}/publish`, {
     method: 'POST',
     body: JSON.stringify({}),
@@ -251,8 +294,10 @@ window.loadTaskDetail = (taskId) => {
 };
 window.toggleHotspot = (id, checked) => toggleHotspot(id, checked);
 
-window.approveTask = () => approveTask().catch((error) => toast(error.message));
-window.rejectTask = () => rejectTask().catch((error) => toast(error.message));
-window.publishTask = () => publishTask().catch((error) => toast(error.message));
+window.approveTask = () => handleApproveTask().catch((error) => toast(error.message));
+window.rejectTask = () => handleRejectTask().catch((error) => toast(error.message));
+window.publishTask = () => handlePublishTask().catch((error) => toast(error.message));
 
+renderCurrentTask();
+renderEmptyTaskDetail();
 refreshAll().catch((error) => toast(error.message));
