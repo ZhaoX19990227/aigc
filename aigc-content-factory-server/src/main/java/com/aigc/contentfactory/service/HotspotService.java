@@ -8,4 +8,6 @@ public interface HotspotService {
     List<HotspotRecord> collectHotspots();
 
     List<HotspotRecord> latestHotspots();
+
+    List<HotspotRecord> findByIds(List<Long> ids);
 }

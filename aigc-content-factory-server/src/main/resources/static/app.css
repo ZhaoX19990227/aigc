@@ -212,6 +212,19 @@ body {
     padding: 16px;
 }
 
+.hotspot-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+
+.hotspot-check input {
+    accent-color: var(--accent);
+}
+
 .hotspot-card h4,
 .task-card h4,
 .detail-card h4 {

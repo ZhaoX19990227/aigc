@@ -1,5 +1,6 @@
 const state = {
   selectedTaskId: null,
+  selectedHotspotIds: new Set(),
 };
 
 async function request(url, options = {}) {
@@ -46,6 +47,10 @@ function renderSummary(summary) {
 function renderHotspots(hotspots) {
   document.getElementById('hotspotList').innerHTML = hotspots.map((item) => `
     <article class="hotspot-card">
+      <label class="hotspot-check">
+        <input type="checkbox" ${state.selectedHotspotIds.has(item.id) ? 'checked' : ''} onchange="toggleHotspot(${item.id}, this.checked)">
+        选择此热点
+      </label>
       <div class="badge">${item.source}</div>
       <h4>${item.title}</h4>
       <div class="meta">热度 ${item.score ?? '-'}</div>
@@ -175,15 +180,25 @@ async function createTask(event) {
     accountPositioning: form.accountPositioning.value,
     preferredTopic: form.preferredTopic.value,
     targetPlatforms: platforms.length ? platforms : ['LOCAL_SIMULATION'],
+    selectedHotspotIds: [...state.selectedHotspotIds],
   };
   const detail = await request('/api/tasks', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
   form.reset();
+  state.selectedHotspotIds.clear();
   toast('任务创建成功');
   await refreshAll();
   renderTaskDetail(detail);
+}
+
+function toggleHotspot(id, checked) {
+  if (checked) {
+    state.selectedHotspotIds.add(id);
+  } else {
+    state.selectedHotspotIds.delete(id);
+  }
 }
 
 async function approveTask() {
@@ -234,6 +249,7 @@ document.getElementById('refreshBtn').addEventListener('click', () => {
 window.loadTaskDetail = (taskId) => {
   loadTaskDetail(taskId).catch((error) => toast(error.message));
 };
+window.toggleHotspot = (id, checked) => toggleHotspot(id, checked);
 
 window.approveTask = () => approveTask().catch((error) => toast(error.message));
 window.rejectTask = () => rejectTask().catch((error) => toast(error.message));

@@ -88,16 +88,24 @@ public class TaskFacadeImpl implements TaskFacade {
     @Override
     @Transactional
     public TaskDetailResponse createTask(CreateTaskRequest request) {
-        List<HotspotRecord> hotspots = appProperties.getWorkflow().isAutoCollectHotspotsOnCreate()
-                ? hotspotService.collectHotspots()
-                : hotspotService.latestHotspots();
+        List<HotspotRecord> hotspots;
+        if (request.getSelectedHotspotIds() != null && !request.getSelectedHotspotIds().isEmpty()) {
+            hotspots = hotspotService.findByIds(request.getSelectedHotspotIds());
+            if (hotspots.isEmpty()) {
+                throw new IllegalArgumentException("所选热点不存在或已失效");
+            }
+        } else {
+            hotspots = appProperties.getWorkflow().isAutoCollectHotspotsOnCreate()
+                    ? hotspotService.collectHotspots()
+                    : hotspotService.latestHotspots();
+        }
 
         ContentTask task = new ContentTask();
         task.setBatchNo("BATCH-" + UUID.randomUUID().toString().substring(0, 8));
         task.setName(request.getTaskName());
         task.setStatus(TaskStatus.HOTSPOT_FETCHED.name());
         task.setCurrentStep("HOTSPOT_FETCHED");
-        task.setSourceType("HOTSPOT");
+        task.setSourceType(request.getSelectedHotspotIds() != null && !request.getSelectedHotspotIds().isEmpty() ? "SELECTED_HOTSPOT" : "HOTSPOT");
         task.setPlatformsJson(writeJson(request.getTargetPlatforms()));
         task.setReviewStatus(ReviewStatus.PENDING.name());
         task.setPublishStatus(PublishStatus.NOT_STARTED.name());

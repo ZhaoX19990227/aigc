@@ -5,6 +5,7 @@ import com.aigc.contentfactory.mapper.HotspotRecordMapper;
 import com.aigc.contentfactory.service.HotspotService;
 import com.aigc.contentfactory.service.model.HotspotPayload;
 import com.aigc.contentfactory.service.provider.HotspotProvider;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,5 +48,14 @@ public class HotspotServiceImpl implements HotspotService {
         return hotspotRecordMapper.selectList(new LambdaQueryWrapper<HotspotRecord>()
                 .orderByDesc(HotspotRecord::getCapturedAt)
                 .last("limit 20"));
+    }
+
+    @Override
+    public List<HotspotRecord> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return hotspotRecordMapper.selectList(Wrappers.<HotspotRecord>lambdaQuery()
+                .in(HotspotRecord::getId, ids));
     }
 }

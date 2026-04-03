@@ -17,4 +17,6 @@ public class CreateTaskRequest {
 
     @NotEmpty
     private List<String> targetPlatforms;
+
+    private List<Long> selectedHotspotIds;
 }
