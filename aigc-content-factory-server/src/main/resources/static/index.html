@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIGC 自动化内容工厂</title>
+    <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="page">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">A</div>
+            <div>
+                <h1>AIGC 内容工厂</h1>
+                <p>热点到发布的一站式工作台</p>
+            </div>
+        </div>
+        <button class="action primary" id="collectHotspotsBtn">抓取热点</button>
+        <button class="action secondary" id="refreshBtn">刷新数据</button>
+        <div class="tips">
+            <h3>一期说明</h3>
+            <p>外部平台与媒体生成默认走本地模拟适配器，保证现在就能完整演示任务闭环。</p>
+        </div>
+    </aside>
+
+    <main class="content">
+        <section class="hero">
+            <div>
+                <p class="eyebrow">Automation Control Panel</p>
+                <h2>构建可追踪、可审核、可扩展的 AIGC 内容流水线</h2>
+                <p class="hero-copy">在一个工作台里查看热点、创建任务、审核脚本并触发发布。</p>
+            </div>
+            <div class="summary-grid" id="summaryCards"></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Task Creation</p>
+                    <h3>新建内容任务</h3>
+                </div>
+            </div>
+            <form id="taskForm" class="task-form">
+                <label>
+                    <span>任务名称</span>
+                    <input name="taskName" placeholder="例如：AI 自动化内容工厂演示任务" required>
+                </label>
+                <label>
+                    <span>账号定位</span>
+                    <input name="accountPositioning" placeholder="例如：企业 AI 自动化运营">
+                </label>
+                <label>
+                    <span>偏好选题关键词</span>
+                    <input name="preferredTopic" placeholder="例如：工作流、自动发布">
+                </label>
+                <label>
+                    <span>目标平台</span>
+                    <select name="targetPlatforms" id="targetPlatforms" multiple size="4">
+                        <option value="XIAOHONGSHU">小红书</option>
+                        <option value="DOUYIN">抖音</option>
+                        <option value="BILIBILI">B站</option>
+                        <option value="LOCAL_SIMULATION" selected>本地模拟</option>
+                    </select>
+                </label>
+                <button class="action primary" type="submit">创建并执行任务</button>
+            </form>
+        </section>
+
+        <section class="two-columns">
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <p class="eyebrow">Trending Topics</p>
+                        <h3>热点池</h3>
+                    </div>
+                </div>
+                <div id="hotspotList" class="list-grid"></div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <p class="eyebrow">Task Board</p>
+                        <h3>任务列表</h3>
+                    </div>
+                </div>
+                <div id="taskList" class="task-list"></div>
+            </section>
+        </section>
+
+        <section class="panel detail-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">Task Detail</p>
+                    <h3>任务详情</h3>
+                </div>
+            </div>
+            <div id="taskDetail" class="empty-state">选择或创建一个任务后，这里会显示脚本、资产和发布记录。</div>
+        </section>
+    </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

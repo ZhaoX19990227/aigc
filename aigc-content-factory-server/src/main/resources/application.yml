@@ -1,0 +1,73 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: aigc-content-factory-server
+  config:
+    import: optional:file:./application-local.yml
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./data/content_factory;MODE=MYSQL;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/data.sql
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: assign_id
+
+app:
+  cors:
+    allowed-origin: http://localhost:5173
+  ai:
+    enabled: ${APP_AI_ENABLED:false}
+    base-url: ${APP_AI_BASE_URL:https://api.openai.com/v1}
+    api-key: ${APP_AI_API_KEY:${OPENAI_API_KEY:}}
+    model: ${APP_AI_MODEL:gpt-4o-mini}
+  storage:
+    base-url: /generated
+    root-dir: ./runtime/generated
+  workflow:
+    auto-collect-hotspots-on-create: true
+    manual-review-required: true
+  publish:
+    xiaohongshu:
+      upload-url: https://creator.xiaohongshu.com/publish/publish
+      auto-open: true
+      browser-profile-dir: ./runtime/browser/xiaohongshu
+      helper-log-dir: ./runtime/logs
+      qr-login-timeout-sec: 180
+    douyin:
+      upload-url: https://creator.douyin.com/creator-micro/content/upload
+      auto-open: true
+      browser-profile-dir: ./runtime/browser/douyin
+      helper-log-dir: ./runtime/logs
+      qr-login-timeout-sec: 180
+    bilibili:
+      upload-url: https://member.bilibili.com/platform/upload/video/frame
+      auto-open: true
+      browser-profile-dir: ./runtime/browser/bilibili
+      helper-log-dir: ./runtime/logs
+      qr-login-timeout-sec: 180

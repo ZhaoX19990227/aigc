@@ -1,0 +1,16 @@
+server:
+  port: 18081
+
+app:
+  ai:
+    enabled: true
+    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    model: qwen-plus
+    api-key: replace-with-your-key
+  publish:
+    bilibili:
+      auto-open: true
+      upload-url: https://member.bilibili.com/platform/upload/video/frame
+      browser-profile-dir: ./runtime/browser/bilibili
+      helper-log-dir: ./runtime/logs
+      qr-login-timeout-sec: 180
