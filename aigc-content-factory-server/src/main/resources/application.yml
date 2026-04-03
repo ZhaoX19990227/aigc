@@ -52,6 +52,10 @@ app:
   workflow:
     auto-collect-hotspots-on-create: true
     manual-review-required: true
+  hotspot:
+    mock-enabled: false
+    zhihu-profile-dir: ./runtime/browser/zhihu
+    helper-log-dir: ./runtime/logs
   publish:
     xiaohongshu:
       upload-url: https://creator.xiaohongshu.com/publish/publish

@@ -12,6 +12,7 @@ public class AppProperties {
     private Storage storage = new Storage();
     private Workflow workflow = new Workflow();
     private Publish publish = new Publish();
+    private Hotspot hotspot = new Hotspot();
 
     @Data
     public static class Cors {
@@ -52,5 +53,12 @@ public class AppProperties {
         private String browserProfileDir;
         private String helperLogDir;
         private Integer qrLoginTimeoutSec = 180;
+    }
+
+    @Data
+    public static class Hotspot {
+        private boolean mockEnabled = false;
+        private String zhihuProfileDir = "./runtime/browser/zhihu";
+        private String helperLogDir = "./runtime/logs";
     }
 }

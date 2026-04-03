@@ -1,12 +1,18 @@
 package com.aigc.contentfactory.service.provider;
 
+import com.aigc.contentfactory.config.AppProperties;
 import com.aigc.contentfactory.service.model.HotspotPayload;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(prefix = "app.hotspot", name = "mock-enabled", havingValue = "true")
 public class MockHotspotProvider implements HotspotProvider {
+
+    public MockHotspotProvider(AppProperties properties) {
+    }
 
     @Override
     public String source() {

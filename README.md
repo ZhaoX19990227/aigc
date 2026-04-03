@@ -98,10 +98,9 @@ password:
 
 暂未实现真实生产级外部能力：
 
-1. 平台官方 API 对接
-2. 真实大模型结构化输出
-3. Stable Diffusion / ComfyUI 图片生成
-4. 抖音/小红书扫码后自动填充发布
+1. 知乎无登录态热榜抓取
+2. Stable Diffusion / ComfyUI 图片生成
+3. 平台官方 API 对接
 
 这些能力在当前代码中都已保留为可替换适配层，不是写死在主流程里的 demo 逻辑。
 
@@ -113,6 +112,9 @@ password:
 4. SRT：生成字幕文件并对外提供访问
 5. 平台手动发布辅助：自动打开上传页，并回写上传说明
 6. Playwright + Chromium：B站扫码后自动填充视频、标题和简介
+7. B站热门：公开接口抓取
+8. 微博热搜：页面抓取
+9. 知乎热榜：登录态页面抓取
 
 生成文件目录：
 
@@ -123,6 +125,7 @@ password:
 1. OpenAI 或兼容模型网关：需要 `OPENAI_API_KEY`
 2. 小红书、抖音、B站真实发布：需要平台账号、Cookie 或开放平台凭证
 3. 本地大模型：可选安装 `Ollama`，再把 `app.ai.base-url` 指向本地兼容网关
+4. 知乎热榜：当前需要一次人工登录知乎，保存 Chromium profile
 
 ## 人工扫码发布
 
@@ -151,3 +154,34 @@ python3 -m playwright install chromium
 辅助脚本位置：
 
 `/Users/zhaox/IdeaProjects/aigc-content-factory/aigc-content-factory-server/scripts/bilibili_publish_helper.py`
+
+## 真实热点源
+
+当前热点源接入策略：
+
+1. B站：公开接口 `https://api.bilibili.com/x/web-interface/popular`
+2. 微博：热搜榜页面 `https://s.weibo.com/top/summary`
+3. 知乎：登录态页面 `https://www.zhihu.com/hot`
+
+当前已验证结论：
+
+1. B站公开接口在当前机器可直接访问
+2. 微博页面抓取在当前机器可直接拿到真实榜单
+3. 知乎公开接口会返回认证错误，公开页面在无登录态下直接进入登录墙
+
+所以知乎实现方式是：
+
+1. 不把它伪装成无认证稳定接口
+2. 需要你先做一次人工登录
+3. 登录后用持久化 Chromium profile 抓取
+
+准备知乎登录态：
+
+```bash
+cd /Users/zhaox/IdeaProjects/aigc-content-factory/aigc-content-factory-server
+python3 scripts/prepare_zhihu_login.py
+```
+
+知乎 profile 默认目录：
+
+`/Users/zhaox/IdeaProjects/aigc-content-factory/aigc-content-factory-server/runtime/browser/zhihu`
