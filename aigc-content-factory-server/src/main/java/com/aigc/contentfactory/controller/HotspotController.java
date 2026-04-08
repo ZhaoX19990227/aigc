@@ -33,7 +33,7 @@ public class HotspotController {
     private List<HotspotResponse> map(List<HotspotRecord> records) {
         return records.stream()
                 .map(item -> HotspotResponse.builder()
-                        .id(item.getId())
+                        .id(String.valueOf(item.getId()))
                         .source(item.getSource())
                         .title(item.getTitle())
                         .summary(item.getSummary())

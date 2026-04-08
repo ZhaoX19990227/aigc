@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class TaskDetailResponse {
 
-    private Long id;
+    private String id;
     private String batchNo;
     private String name;
     private String status;

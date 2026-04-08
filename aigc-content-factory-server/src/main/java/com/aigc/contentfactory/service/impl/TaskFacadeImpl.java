@@ -167,7 +167,7 @@ public class TaskFacadeImpl implements TaskFacade {
                         .orderByDesc(ContentTask::getCreatedAt))
                 .stream()
                 .map(task -> TaskListItemResponse.builder()
-                        .id(task.getId())
+                        .id(String.valueOf(task.getId()))
                         .name(task.getName())
                         .status(task.getStatus())
                         .reviewStatus(task.getReviewStatus())
@@ -331,7 +331,7 @@ public class TaskFacadeImpl implements TaskFacade {
                         .build())
                 .toList();
         return TaskDetailResponse.builder()
-                .id(task.getId())
+                .id(String.valueOf(task.getId()))
                 .batchNo(task.getBatchNo())
                 .name(task.getName())
                 .status(task.getStatus())

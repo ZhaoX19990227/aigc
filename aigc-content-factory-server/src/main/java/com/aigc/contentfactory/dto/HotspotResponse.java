@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class HotspotResponse {
 
-    private Long id;
+    private String id;
     private String source;
     private String title;
     private String summary;

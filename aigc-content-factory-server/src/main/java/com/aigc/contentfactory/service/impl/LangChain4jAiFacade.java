@@ -28,7 +28,6 @@ public class LangChain4jAiFacade implements AiFacade {
 
     private static final Pattern CODE_BLOCK_PATTERN = Pattern.compile("```(?:json)?\\s*(\\{.*})\\s*```", Pattern.DOTALL);
 
-    private final MockAiFacade fallback = new MockAiFacade();
     private final OpenAiStructuredAssistant assistant;
     private final ObjectMapper objectMapper;
 
@@ -54,12 +53,12 @@ public class LangChain4jAiFacade implements AiFacade {
             );
             List<TopicSuggestion> parsedTopics = parseTopicSuggestions(extractJson(response));
             if (parsedTopics.isEmpty()) {
-                return fallback.suggestTopics(hotspots, accountPositioning, platforms);
+                throw new IllegalStateException("模型未返回可用选题");
             }
             return parsedTopics;
         } catch (Exception exception) {
-            log.warn("OpenAI suggestTopics failed, fallback to mock: {}", exception.getMessage());
-            return fallback.suggestTopics(hotspots, accountPositioning, platforms);
+            log.error("AI suggestTopics failed: {}", exception.getMessage());
+            throw new IllegalStateException("AI 选题失败: " + exception.getMessage(), exception);
         }
     }
 
@@ -83,8 +82,8 @@ public class LangChain4jAiFacade implements AiFacade {
                     .imagePrompt(payload.getImagePrompt())
                     .build();
         } catch (Exception exception) {
-            log.warn("OpenAI generateScript failed, fallback to mock: {}", exception.getMessage());
-            return fallback.generateScript(topic, accountPositioning, platforms);
+            log.error("AI generateScript failed: {}", exception.getMessage());
+            throw new IllegalStateException("AI 脚本生成失败: " + exception.getMessage(), exception);
         }
     }
 

@@ -7,9 +7,11 @@ import com.aigc.contentfactory.service.model.TopicSuggestion;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(prefix = "app.ai", name = "enabled", havingValue = "false", matchIfMissing = true)
 public class MockAiFacade implements AiFacade {
 
     @Override

@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class TaskListItemResponse {
 
-    private Long id;
+    private String id;
     private String name;
     private String status;
     private String reviewStatus;

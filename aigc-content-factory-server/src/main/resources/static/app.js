@@ -49,7 +49,7 @@ function renderHotspots(hotspots) {
   document.getElementById('hotspotList').innerHTML = hotspots.map((item) => `
     <article class="hotspot-card">
       <label class="hotspot-check">
-        <input type="checkbox" ${state.selectedHotspotIds.has(item.id) ? 'checked' : ''} onchange="toggleHotspot(${item.id}, this.checked)">
+        <input type="checkbox" ${state.selectedHotspotIds.has(item.id) ? 'checked' : ''} onchange="toggleHotspot('${item.id}', this.checked)">
         选择此热点
       </label>
       <div class="badge">${item.source}</div>
@@ -67,7 +67,7 @@ function renderTasks(tasks) {
       <div class="task-meta">话题：${task.selectedTopic ?? '-'}</div>
       <div class="task-meta">状态：${task.status} / 审核：${task.reviewStatus} / 发布：${task.publishStatus}</div>
       <div class="task-meta">平台：${(task.targetPlatforms || []).join(', ')}</div>
-      <button class="action secondary inline" onclick="loadTaskDetail(${task.id})">查看详情</button>
+      <button class="action secondary inline" onclick="loadTaskDetail('${task.id}')">查看详情</button>
     </article>
   `).join('');
 }
